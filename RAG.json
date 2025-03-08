@@ -1,0 +1,1023 @@
+{
+  "name": "RAG",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1FAnZ8FLPl3e1GqYsncYJAA0tl07Nh39I",
+            "mode": "list",
+            "cachedResultName": "data_20250222",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1FAnZ8FLPl3e1GqYsncYJAA0tl07Nh39I"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1160,
+        860
+      ],
+      "id": "5922f294-e9f6-4cf4-bbfd-bed1f9bda9e5",
+      "name": "Google Drive1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "iGGqVToYyRsYL33v",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "listFiles",
+        "responseMode": "lastNode",
+        "responseData": "allEntries",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        920,
+        860
+      ],
+      "id": "b6b08d20-084b-49bf-9a12-8bc36a8f5305",
+      "name": "ListFile",
+      "webhookId": "cb7ba732-f98e-4867-90cd-ad4aa1b6d7bd"
+    },
+    {
+      "parameters": {
+        "operation": "deleteFile",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.body.fileId }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1180,
+        1760
+      ],
+      "id": "4a43c4ac-11ca-413f-b65f-08285fa322ad",
+      "name": "Google Drive2",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "iGGqVToYyRsYL33v",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const newItems = [];\n\n// If the webhook item has binary data, iterate over each property\nif (items[0].binary) {\n  for (const key in items[0].binary) {\n    newItems.push({\n      json: { fileKey: key },\n      binary: { data: items[0].binary[key] }\n    });\n  }\n}\n\nreturn newItems;"
+      },
+      "name": "Split Binary Files",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        1320
+      ],
+      "id": "9abcd808-103f-4d96-94c3-5b45e7e2b46b"
+    },
+    {
+      "parameters": {
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1FAnZ8FLPl3e1GqYsncYJAA0tl07Nh39I",
+          "mode": "list",
+          "cachedResultName": "data_20250222",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1FAnZ8FLPl3e1GqYsncYJAA0tl07Nh39I"
+        },
+        "options": {}
+      },
+      "name": "Google Drive Upload",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1320,
+        1180
+      ],
+      "id": "04af5419-3937-48d7-8a83-e1c5c7d512ec",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "iGGqVToYyRsYL33v",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "upload",
+        "responseMode": "lastNode",
+        "responseData": "allEntries",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "name": "AddFile",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        920,
+        1320
+      ],
+      "id": "4a58e0ea-187a-49b0-9256-4d57fa0ad80c",
+      "webhookId": "f19719dd-7a52-4e73-b96a-d1fc1a616a48"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "test",
+          "mode": "list",
+          "cachedResultName": "test"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1,
+      "position": [
+        1900,
+        1300
+      ],
+      "id": "19e06f38-c092-425a-abf1-5e287cc77567",
+      "name": "Qdrant Vector Store",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "qdrantApi": {
+          "id": "qRZ8OL6G9uvHGtVY",
+          "name": "QdrantApi account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "modelName": "=models/text-embedding-004"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1860,
+        1440
+      ],
+      "id": "2db64611-b3cd-42c0-b14d-72c2916c17ab",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IsxS3wvO6DGdLBmA",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "fileid",
+                "value": "={{ $json.fileid }}"
+              },
+              {
+                "name": "name",
+                "value": "={{ $json.name }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        1480
+      ],
+      "id": "2508ba41-fee8-44ad-ad36-77e1603eab75",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 2500,
+        "chunkOverlap": 20,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        1600
+      ],
+      "id": "d1c6fd92-43ff-4af9-b70b-49abbc95652a",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cf673d35-df0d-440a-a5d4-f33ff6d8ebc6",
+              "name": "fileid",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "72f44eea-10be-4765-b8bc-6a03038470fa",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "include": "selected",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1480,
+        1180
+      ],
+      "id": "5088a107-a27e-4945-929b-dc201919d6ec",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1660,
+        1300
+      ],
+      "id": "4aa1e668-7c40-40c3-a5b2-e267411babe3",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "httpMethod": "DELETE",
+        "path": "deleteFile",
+        "responseMode": "lastNode",
+        "responseData": "allEntries",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        920,
+        1860
+      ],
+      "id": "32429c4f-1df1-4b1c-bedc-0e22dac7a21c",
+      "name": "DelFile",
+      "webhookId": "07e21419-fa72-48d9-9c57-6efb003ac2af"
+    },
+    {
+      "parameters": {
+        "content": "## Take all files that store in GG drive to display\n",
+        "height": 300,
+        "width": 680
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        840,
+        760
+      ],
+      "id": "0d26b7b9-d9c7-43e9-ba22-e025c63be56a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Get data -> store in GG drive and Embeding document + take id and file name to become metadata-> store in Qdrant",
+        "height": 660,
+        "width": 1920
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        840,
+        1060
+      ],
+      "id": "d3b8cc78-841a-4bf0-a8a9-0f46484c6770",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Delete file on Qdrant and GG drive when user click delete",
+        "height": 400,
+        "width": 720
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        840,
+        1720
+      ],
+      "id": "001761ec-3e7c-4a02-88c5-6c251e955e64",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Handle user query/ user feed back. Remember historychat\nwhen user query input RAG with normal RAG tool, If user dislike update feedbackscore in Qdrant then re-search tool in Qdrant again by feedbackScore",
+        "height": 840,
+        "width": 1540
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        840,
+        2140
+      ],
+      "id": "9b10933f-4aff-4e58-ae55-8f141a7d4e6d",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://70ca9ac8-44df-4e7a-97d3-42db74808297.europe-west3-0.gcp.cloud.qdrant.io:6333/collections/test/points/delete",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"api-key\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0._GE7YUKjTrsyWCwssJAXNBUGTHhkwlAD28dzwb1EleY\"\n}\n",
+        "sendBody": true,
+        "contentType": "raw",
+        "body": "={\n  \"filter\": {\n    \"must\": [\n      {\n        \"key\": \"metadata.fileid\",\n        \"match\": {\n          \"value\":\"{{ $json.body.fileId }}\"\n        }\n      }\n    ]\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        1940
+      ],
+      "id": "c7619bf3-7980-4f80-9f97-1217b62a109d",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://70ca9ac8-44df-4e7a-97d3-42db74808297.europe-west3-0.gcp.cloud.qdrant.io:6333/collections/test/points/payload",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"api-key\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0._GE7YUKjTrsyWCwssJAXNBUGTHhkwlAD28dzwb1EleY\"\n}\n",
+        "sendBody": true,
+        "contentType": "raw",
+        "body": "={\n  \"payload\": {\n    \"payload.feedbackScore\": -1\n  },\n  \"points\": [\"{{ $json.body.id }}\"]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1080,
+        2380
+      ],
+      "id": "35fc1f3d-2557-4bca-8f0c-154ab6f28285",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the raw output text from the previous node\nconst rawText = $input.first().json.output;\n// Use a regular expression to extract the JSON content between ```json fences\nconst regex = /```json\\s*([\\s\\S]*?)\\s*```/;\nlet jsonString = rawText.match(regex) ? rawText.match(regex)[1] : rawText;\n\ntry {\n  // Parse the extracted JSON string\n  const data = JSON.parse(jsonString);\n\n  // Ensure fileid is null if not provided\n  const output = data.output;\n  const id = data.id ? data.id : null;\n  const fileid= data.fileid ? data.fileid : null;\n  return [\n    {\n      json: {\n        output,\n        fileid,\n        id\n      }\n    }\n  ];\n} catch (err) {\n  throw new Error(\"Failed to parse JSON: \" + err.message);\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1820,
+        2400
+      ],
+      "id": "98265d47-ffcd-40a5-821e-fd5ffb27fe7c",
+      "name": "Code",
+      "retryOnFail": false,
+      "maxTries": 5,
+      "waitBetweenTries": 2000,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "09ab0661-1453-4fbb-95a4-05a55d9e1b63",
+              "leftValue": "={{ $json.body.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "a96e9eb3-20eb-4821-878e-1765b8364b18",
+              "leftValue": "={{ $json.body.fileid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        900,
+        2520
+      ],
+      "id": "dff7e998-a7ac-47c6-9efa-b238e09ae5a5",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Please when you done, give final output in the following JSON format:\n{\n  \"output\": \"final response here\",\n  \"fileid\": \"17Ow1W6XXXIXX-XXX\",\n  \"id\": \"5045b5ac-xxx-xxx-xxxxxx-xxx\"\n}\nQuery:\n{{ $json.body.message }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant. Answer the question based on the data in RAG tool, always use/call it when ever you answer. And only answer base on the document from RAG. only when user dislike question, re-reanking document from request tool to give the best answer for user. Be kind, smart. ",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1380,
+        2400
+      ],
+      "id": "6ae6dbcf-1d2c-4993-aa81-fbc2037c0cc7",
+      "name": "AI Agent1",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1260,
+        2680
+      ],
+      "id": "c2523655-6734-4127-b750-616c6cc49124",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IsxS3wvO6DGdLBmA",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/text-embedding-004"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1940,
+        2720
+      ],
+      "id": "68955f72-6d48-4fb3-af32-35978657c2da",
+      "name": "Embeddings Google Gemini2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IsxS3wvO6DGdLBmA",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chat",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        1080,
+        2220
+      ],
+      "id": "ef0371bd-41d4-40e2-ac9b-73f2e83c9f74",
+      "name": "Chat1",
+      "webhookId": "cf6a18b5-b9dd-470c-be5b-e5235f63702a"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dislike",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        1080,
+        2660
+      ],
+      "id": "665e346c-75ef-4eee-b402-ba95475cbf9e",
+      "name": "HandleDislike1",
+      "webhookId": "1a5702a5-d7ff-423f-a510-56fe82f11d22"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "RAG",
+        "toolDescription": "call this every time user ask for question, take data in Qdrant collection",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "test",
+          "mode": "list",
+          "cachedResultName": "test"
+        },
+        "topK": 5,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1,
+      "position": [
+        1800,
+        2620
+      ],
+      "id": "e82d1f8c-4c97-4acb-8eb8-267c8bb60f93",
+      "name": "Normal rag1",
+      "credentials": {
+        "qdrantApi": {
+          "id": "qRZ8OL6G9uvHGtVY",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.sessionid }}",
+        "contextWindowLength": 4
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1400,
+        2680
+      ],
+      "id": "64dd1d53-5182-4b70-b541-18ca05090fab",
+      "name": "Window Buffer Memory1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/text-embedding-004"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1620,
+        2740
+      ],
+      "id": "cbcc2956-074a-42a7-82a6-d734943cddba",
+      "name": "Embeddings Google Gemini4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IsxS3wvO6DGdLBmA",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "RERANKING",
+        "toolDescription": "call this every time user dislike the answer, take data in Qdrant collection with feedbackscore",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "test",
+          "mode": "list",
+          "cachedResultName": "test"
+        },
+        "topK": 5,
+        "options": {
+          "searchFilterJson": "{\n  \"must_not\": [\n    {\n      \"key\": \"payload.feedbackScore\",\n      \"range\": {\n        \"lte\": -1\n      }\n    }\n  ]\n}\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        2620
+      ],
+      "id": "8501c4f5-b252-4089-82c7-bb741018edfb",
+      "name": "Re-search1",
+      "credentials": {
+        "qdrantApi": {
+          "id": "qRZ8OL6G9uvHGtVY",
+          "name": "QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://70ca9ac8-44df-4e7a-97d3-42db74808297.europe-west3-0.gcp.cloud.qdrant.io:6333/collections/test/points/scroll",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"api-key\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0._GE7YUKjTrsyWCwssJAXNBUGTHhkwlAD28dzwb1EleY\"\n}\n",
+        "sendBody": true,
+        "contentType": "raw",
+        "body": "={ \"limit\": 1000}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2340,
+        1280
+      ],
+      "id": "b41e9044-260f-44a3-b3c8-ecd7bec613ca",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://70ca9ac8-44df-4e7a-97d3-42db74808297.europe-west3-0.gcp.cloud.qdrant.io:6333/collections/test/points/payload",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\",\n  \"api-key\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0._GE7YUKjTrsyWCwssJAXNBUGTHhkwlAD28dzwb1EleY\"\n}\n",
+        "sendBody": true,
+        "contentType": "raw",
+        "body": "={\n  \"points\": [\"{{ $json.id }}\"],\n  \"payload\": {\n    \"payload.feedbackScore\": 1\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2540,
+        1520
+      ],
+      "id": "a0143a9e-3679-4805-be91-dead173722af",
+      "name": "HTTP Request4"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Access the points array from the input\nconst points = $input.first().json.result.points;\n\n// Map each point to its own output item (each item is an object with a json property)\nconst output = points.map(point => {\n  return { json: { id: point.id } };\n});\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2560,
+        1280
+      ],
+      "id": "db978d5f-ca50-4ded-83de-a2bbef5c1f64",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2080,
+        2340
+      ],
+      "id": "1a591454-3ff8-4f86-829b-3a635c8f9143",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "ListFile": {
+      "main": [
+        [
+          {
+            "node": "Google Drive1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Binary Files": {
+      "main": [
+        [
+          {
+            "node": "Google Drive Upload",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "AddFile": {
+      "main": [
+        [
+          {
+            "node": "Split Binary Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Upload": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DelFile": {
+      "main": [
+        [
+          {
+            "node": "Google Drive2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Normal rag1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HandleDislike1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normal rag1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini4": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Re-search1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Re-search1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b275d4bf-c7cc-49a5-a31e-cb4b0c4a9e82",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0eeb8e745e9cdeda56ac5ce7fc196c781e918dae98463329410227ec22e87d36"
+  },
+  "id": "r6xn779V2aZdJbPM",
+  "tags": []
+}
